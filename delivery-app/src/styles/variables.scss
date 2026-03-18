@@ -1,0 +1,34 @@
+// ── Cores ─────────────────────────────────────────────────────────
+$background:       #F5EDE6;
+$foreground:       #2B2623;
+$card:             #FAF5F0;
+$primary:          #B5735A;
+$secondary:        #EDE4DB;
+$muted:            #EDEBE8;
+$muted-foreground: #8C8073;
+$accent:           #F2E8DC;
+$border:           #E5DDD4;
+$success:          #2BB56A;
+$warning:          #F5A623;
+$info:             #2E8BF0;
+$destructive:      #E23B3B;
+
+// ── Tipografia ────────────────────────────────────────────────────
+$font-body:    'Inter', sans-serif;
+$font-display: 'Poppins', serif;
+
+// ── Breakpoints ───────────────────────────────────────────────────
+$bp-sm: 640px;
+$bp-md: 768px;
+$bp-lg: 1024px;
+
+// ── Bordas / Sombras ──────────────────────────────────────────────
+$radius-sm:  8px;
+$radius-md:  12px;
+$radius-lg:  16px;
+$radius-xl:  20px;
+$radius-full: 999px;
+
+$shadow-sm: 0 2px 8px rgba($foreground, 0.06);
+$shadow-md: 0 8px 24px rgba($foreground, 0.08);
+$shadow-lg: 0 16px 48px rgba($foreground, 0.12);

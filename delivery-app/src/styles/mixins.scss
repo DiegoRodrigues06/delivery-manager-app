@@ -1,0 +1,34 @@
+@use 'variables' as *;
+
+// ── Breakpoints ───────────────────────────────────────────────────
+@mixin sm {
+  @media (min-width: $bp-sm) { @content; }
+}
+
+@mixin md {
+  @media (min-width: $bp-md) { @content; }
+}
+
+@mixin lg {
+  @media (min-width: $bp-lg) { @content; }
+}
+
+// ── Layout helpers ────────────────────────────────────────────────
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+// ── Truncar texto ─────────────────────────────────────────────────
+@mixin truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -1,0 +1,13 @@
+@use 'variables' as *;
+
+.font-display {
+  font-family: $font-display;
+}
+
+.text-muted {
+  color: $muted-foreground;
+}
+
+.hidden {
+  display: none !important;
+}

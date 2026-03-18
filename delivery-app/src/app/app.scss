@@ -1,0 +1,503 @@
+@use 'sass:color';
+@use '../styles/variables' as *;
+@use '../styles/mixins' as *;
+
+// ── App ───────────────────────────────────────────────────────────
+.app {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+// ── Header ────────────────────────────────────────────────────────
+.header {
+  width: 100%;
+  padding: 18px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: $background;
+  border-bottom: 1px solid $border;
+
+  @media (max-width: $bp-sm) { padding: 14px 16px; }
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: $secondary;
+    @include flex-center;
+    color: $primary;
+    i { width: 20px; height: 20px; }
+  }
+
+  &__title {
+    font-size: 1.35rem;
+    line-height: 1.2;
+    color: $foreground;
+    margin: 0;
+  }
+
+  &__subtitle {
+    font-size: 0.75rem;
+    color: $muted-foreground;
+    font-weight: 500;
+    margin: 0;
+  }
+
+  &__right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+}
+
+// ── Stats bar ─────────────────────────────────────────────────────
+.stats-bar {
+  display: none;
+  align-items: center;
+  gap: 20px;
+
+  @include sm { display: flex; }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: $muted-foreground;
+
+    i { width: 15px; height: 15px; }
+
+    &--link {
+      cursor: pointer;
+      &:hover { color: $foreground; }
+    }
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+
+    &--pending    { background: $warning; }
+    &--preparing  { background: $info; }
+    &--delivering { background: $primary; }
+  }
+}
+
+// ── Toolbar ───────────────────────────────────────────────────────
+.toolbar {
+  width: 100%;
+  padding: 12px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid $border;
+  background: $background;
+
+  @media (max-width: $bp-sm) { padding: 10px 16px; }
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────
+.tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+
+  &__btn {
+    padding: 7px 16px;
+    border-radius: $radius-full;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: 1px solid $border;
+    background: transparent;
+    color: $muted-foreground;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+
+    &:hover {
+      border-color: $foreground;
+      color: $foreground;
+    }
+
+    &--active {
+      background: $foreground;
+      color: #fff;
+      border-color: $foreground;
+    }
+  }
+}
+
+// ── Botões ────────────────────────────────────────────────────────
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: $radius-full;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, opacity 0.15s ease;
+  flex-shrink: 0;
+
+  i { width: 16px; height: 16px; }
+
+  &--primary {
+    background: $primary;
+    color: #fff;
+    &:hover { background: color.adjust($primary, $lightness: -6%); }
+  }
+
+  &--advance {
+    background: transparent;
+    color: $primary;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0;
+    border-radius: 0;
+    gap: 2px;
+
+    i { width: 14px; height: 14px; }
+    &:hover { opacity: 0.7; }
+  }
+
+  &--full {
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
+    border-radius: $radius-md;
+    margin-top: 4px;
+  }
+
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: $radius-sm;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  @include flex-center;
+  transition: background 0.15s ease;
+
+  i { width: 14px; height: 14px; color: rgba($foreground, 0.35); }
+
+  &--edit:hover   { background: rgba($info, 0.12); }
+  &--delete:hover { background: rgba($destructive, 0.1); }
+}
+
+// ── Orders ────────────────────────────────────────────────────────
+.orders {
+  flex: 1;
+  padding: 20px 32px;
+  overflow: auto;
+
+  @media (max-width: $bp-sm) { padding: 16px; }
+
+  &__grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: 1fr;
+
+    @include sm  { grid-template-columns: repeat(2, 1fr); }
+    @include lg  { grid-template-columns: repeat(3, 1fr); }
+  }
+}
+
+// ── Empty state ───────────────────────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+  text-align: center;
+
+  &__icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: $secondary;
+    @include flex-center;
+    margin-bottom: 16px;
+    i { width: 32px; height: 32px; color: $muted-foreground; }
+  }
+
+  &__title {
+    font-size: 1.2rem;
+    color: rgba($foreground, 0.7);
+    margin: 0 0 4px;
+  }
+
+  &__subtitle {
+    font-size: 0.875rem;
+    color: $muted-foreground;
+    margin: 0;
+  }
+}
+
+// ── Order Card ────────────────────────────────────────────────────
+.order-card {
+  background: #fff;
+  border-radius: $radius-lg;
+  padding: 18px 20px;
+  border: 1px solid $border;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: $shadow-md;
+  }
+
+  // Linha topo: id + badge + horário
+  &__top {
+    @include flex-between;
+    margin-bottom: 6px;
+  }
+
+  &__id-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__id {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: $foreground;
+  }
+
+  &__badge {
+    font-size: 0.68rem;
+    letter-spacing: 0.03em;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: $radius-full;
+
+    &--pending    { background: rgba($warning, 0.18);  color: color.adjust($warning,  $lightness: -18%); }
+    &--preparing  { background: rgba($info, 0.15);     color: color.adjust($info,     $lightness: -15%); }
+    &--delivering { background: rgba($primary, 0.15);  color: color.adjust($primary,  $lightness: -8%); }
+    &--done       { background: rgba($success, 0.15);  color: color.adjust($success,  $lightness: -10%); }
+  }
+
+  &__time {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    color: $muted-foreground;
+    i { width: 12px; height: 12px; }
+  }
+
+  &__name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: $foreground;
+    margin: 0 0 8px;
+  }
+
+  &__contact {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+
+  &__contact-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: $muted-foreground;
+    i { width: 12px; height: 12px; flex-shrink: 0; }
+  }
+
+  &__divider {
+    height: 1px;
+    background: $border;
+    margin-bottom: 12px;
+  }
+
+  &__items {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 14px;
+  }
+
+  &__item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  &__item-name {
+    font-size: 0.82rem;
+    color: $foreground;
+  }
+
+  &__item-price {
+    font-size: 0.82rem;
+    color: $muted-foreground;
+    white-space: nowrap;
+  }
+
+  &__footer {
+    @include flex-between;
+    margin-top: 4px;
+    padding-top: 12px;
+    border-top: 1px solid $border;
+  }
+
+  &__total {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: $foreground;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+}
+
+// ── Modal ─────────────────────────────────────────────────────────
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+
+  &__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba($foreground, 0.3);
+  }
+
+  &__wrapper {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+
+    @include sm {
+      align-items: center;
+      padding: 16px;
+    }
+  }
+
+  &__sheet {
+    background: $background;
+    width: 100%;
+    border-radius: $radius-lg $radius-lg 0 0;
+    max-height: 92%;
+    overflow: auto;
+    box-shadow: $shadow-lg;
+    position: relative;
+    z-index: 1;
+
+    @include sm {
+      max-width: 448px;
+      border-radius: $radius-lg;
+    }
+  }
+
+  &__head {
+    position: sticky;
+    top: 0;
+    background: $background;
+    padding: 22px 24px 14px;
+    border-bottom: 1px solid $border;
+    @include flex-between;
+    z-index: 10;
+  }
+
+  &__title { font-size: 1.2rem; margin: 0; }
+
+  &__body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+}
+
+// ── Form ──────────────────────────────────────────────────────────
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  &__label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: $muted-foreground;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  &__input {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: $radius-md;
+    background: #fff;
+    border: 1px solid $border;
+    font-size: 0.875rem;
+    color: $foreground;
+    transition: box-shadow 0.15s;
+
+    &--textarea { resize: none; }
+    &--select   { appearance: none; cursor: pointer; }
+  }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+// ── Confirm buttons ───────────────────────────────────────────────
+.confirm-box__btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: $radius-md;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: background 0.15s;
+
+  &--cancel {
+    background: transparent;
+    border: 1px solid $border;
+    color: $foreground;
+    &:hover { background: $muted; }
+  }
+
+  &--confirm {
+    background: $destructive;
+    color: #fff;
+    &:hover { background: color.adjust($destructive, $lightness: -8%); }
+  }
+}

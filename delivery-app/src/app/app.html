@@ -1,0 +1,181 @@
+<div class="app">
+
+  <!-- ── Header ──────────────────────────────────────────────── -->
+  <header class="header anim-fade">
+    <div class="header__brand">
+      <div class="header__icon">
+        <i data-lucide="package"></i>
+      </div>
+      <div>
+        <h1 class="header__title font-display">Meu Delivery</h1>
+        <p class="header__subtitle">Gerencie seus pedidos</p>
+      </div>
+    </div>
+
+    <div class="header__right">
+      <div class="stats-bar">
+        <span class="stats-bar__item">
+          <span class="stats-bar__dot stats-bar__dot--pending"></span>
+          {{ stats.pending }} pendentes
+        </span>
+        <span class="stats-bar__item">
+          <span class="stats-bar__dot stats-bar__dot--preparing"></span>
+          {{ stats.preparing }} preparando
+        </span>
+        <span class="stats-bar__item">
+          <span class="stats-bar__dot stats-bar__dot--delivering"></span>
+          {{ stats.delivering }} em entrega
+        </span>
+        <span class="stats-bar__item stats-bar__item--link">
+          <i data-lucide="bar-chart-2"></i>
+          Vendas
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Toolbar: tabs + botão ───────────────────────────────── -->
+  <div class="toolbar">
+    <nav class="tabs">
+      <button class="tabs__btn" [class.tabs__btn--active]="activeTab === 'all'"        (click)="setTab('all')">Todos</button>
+      <button class="tabs__btn" [class.tabs__btn--active]="activeTab === 'pending'"    (click)="setTab('pending')">Pendente</button>
+      <button class="tabs__btn" [class.tabs__btn--active]="activeTab === 'preparing'"  (click)="setTab('preparing')">Preparando</button>
+      <button class="tabs__btn" [class.tabs__btn--active]="activeTab === 'delivering'" (click)="setTab('delivering')">Em Entrega</button>
+      <button class="tabs__btn" [class.tabs__btn--active]="activeTab === 'done'"       (click)="setTab('done')">Entregue</button>
+    </nav>
+    <button class="btn btn--primary" (click)="openNewModal()">
+      <i data-lucide="plus"></i>
+      Novo Pedido
+    </button>
+  </div>
+
+  <!-- ── Lista de pedidos ─────────────────────────────────────── -->
+  <main class="orders">
+
+    <div *ngIf="filteredOrders.length === 0" class="empty-state anim-fade">
+      <div class="empty-state__icon"><i data-lucide="package-open"></i></div>
+      <h3 class="empty-state__title font-display">Nenhum pedido ainda</h3>
+      <p class="empty-state__subtitle">Clique em "Novo Pedido" para começar</p>
+    </div>
+
+    <div class="orders__grid" *ngIf="filteredOrders.length > 0">
+      <div
+        *ngFor="let order of filteredOrders; trackBy: trackByOrder; let i = index"
+        class="order-card anim-slide"
+        [style.animation-delay]="i * 0.05 + 's'"
+      >
+        <!-- Linha 1: número + badge + horário -->
+        <div class="order-card__top">
+          <div class="order-card__id-row">
+            <span class="order-card__id">{{ getOrderId(order) }}</span>
+            <span class="order-card__badge order-card__badge--{{ STATUS_MAP[order.status].modifier }}">
+              {{ STATUS_MAP[order.status].label }}
+            </span>
+          </div>
+          <span class="order-card__time">
+            <i data-lucide="clock"></i>
+            {{ getTimeAgo(order.created_at) }}
+          </span>
+        </div>
+
+        <!-- Nome -->
+        <p class="order-card__name">{{ order.customer_name }}</p>
+
+        <!-- Endereço + telefone -->
+        <div class="order-card__contact">
+          <span class="order-card__contact-row">
+            <i data-lucide="map-pin"></i>
+            {{ order.address }}
+          </span>
+          <span *ngIf="order.phone" class="order-card__contact-row">
+            <i data-lucide="phone"></i>
+            {{ order.phone }}
+          </span>
+        </div>
+
+        <div class="order-card__divider"></div>
+
+        <!-- Itens -->
+        <div class="order-card__items">
+          <div *ngFor="let item of parseItems(order.items)" class="order-card__item-row">
+            <span class="order-card__item-name">{{ item.name }}</span>
+            <span *ngIf="item.price" class="order-card__item-price">{{ item.price }}</span>
+          </div>
+        </div>
+
+        <!-- Rodapé -->
+        <div class="order-card__footer">
+          <span class="order-card__total">R$ {{ order.total | number:'1.2-2' }}</span>
+          <div class="order-card__actions">
+            <button class="icon-btn icon-btn--edit" title="Editar" (click)="openEditModal(order)">
+              <i data-lucide="pencil"></i>
+            </button>
+            <button class="icon-btn icon-btn--delete" title="Excluir" (click)="confirmDelete(order)">
+              <i data-lucide="trash-2"></i>
+            </button>
+            <button *ngIf="NEXT_STATUS[order.status]" class="btn btn--advance" (click)="advanceStatus(order)">
+              Avançar <i data-lucide="chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ── Modal ────────────────────────────────────────────────── -->
+  <div class="modal" *ngIf="isModalOpen">
+    <div class="modal__backdrop anim-fade" (click)="closeModal()"></div>
+    <div class="modal__wrapper">
+      <div class="modal__sheet anim-slide">
+        <div class="modal__head">
+          <h2 class="modal__title font-display">{{ editingOrder ? 'Editar Pedido' : 'Novo Pedido' }}</h2>
+          <button class="icon-btn" (click)="closeModal()"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal__body">
+          <div class="form-field">
+            <label class="form-field__label">Cliente</label>
+            <input type="text" class="form-field__input" placeholder="Nome do cliente" [(ngModel)]="form.customer_name" />
+          </div>
+          <div class="form-field">
+            <label class="form-field__label">Endereço</label>
+            <input type="text" class="form-field__input" placeholder="Rua, número, bairro" [(ngModel)]="form.address" />
+          </div>
+          <div class="form-field">
+            <label class="form-field__label">Telefone</label>
+            <input type="text" class="form-field__input" placeholder="(11) 99999-9999" [(ngModel)]="form.phone" />
+          </div>
+          <div class="form-field">
+            <label class="form-field__label">Itens do Pedido</label>
+            <textarea class="form-field__input form-field__input--textarea" placeholder="Ex: 1x Pizza Margherita R$ 45,00" rows="4" [(ngModel)]="form.items"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-field__label">Total (R$)</label>
+              <input type="number" step="0.01" min="0" class="form-field__input" placeholder="0,00" [(ngModel)]="form.total" />
+            </div>
+            <div class="form-field">
+              <label class="form-field__label">Status</label>
+              <select class="form-field__input form-field__input--select" [(ngModel)]="form.status">
+                <option value="pending">Pendente</option>
+                <option value="preparing">Preparando</option>
+                <option value="delivering">Em Entrega</option>
+                <option value="done">Entregue</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="form-field__label">Observações</label>
+            <input type="text" class="form-field__input" placeholder="Sem cebola, troco para 50..." [(ngModel)]="form.notes" />
+          </div>
+          <button class="btn btn--primary btn--full" [disabled]="isSubmitting" (click)="saveOrder()">
+            <span *ngIf="isSubmitting" class="spinner"></span>
+            <span *ngIf="!isSubmitting">{{ editingOrder ? 'Atualizar Pedido' : 'Salvar Pedido' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+  <div id="confirm-container"></div>
+</div>

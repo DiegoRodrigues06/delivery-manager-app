@@ -1,0 +1,90 @@
+@use 'sass:color';
+@use 'variables' as *;
+
+// ── Spinner ───────────────────────────────────────────────────────
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(#fff, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+// ── Toast ─────────────────────────────────────────────────────────
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast {
+  padding: 12px 20px;
+  border-radius: 10px;
+  color: $foreground;
+  font-size: 0.875rem;
+  font-weight: 500;
+  animation: slideUp 0.3s ease-out;
+
+  &--success {
+    background: rgba($success, 0.15);
+    border: 1px solid rgba($success, 0.3);
+  }
+
+  &--error {
+    background: rgba($destructive, 0.12);
+    border: 1px solid rgba($destructive, 0.25);
+  }
+}
+
+// ── Confirm overlay ───────────────────────────────────────────────
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba($foreground, 0.3);
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
+.confirm-box {
+  background: $card;
+  border-radius: 16px;
+  padding: 28px;
+  max-width: 360px;
+  width: 90%;
+  box-shadow: 0 16px 48px rgba($foreground, 0.15);
+
+  &__btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s;
+
+    &--cancel {
+      background: transparent;
+      border: 1px solid $border;
+      color: $foreground;
+
+      &:hover { background: $muted; }
+    }
+
+    &--confirm {
+      background: $destructive;
+      color: #fff;
+
+      &:hover { background: color.adjust($destructive, $lightness: -8%); }
+    }
+  }
+}
