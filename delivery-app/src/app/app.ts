@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -6,8 +6,8 @@ import {
   OrderStatus,
   STATUS_MAP,
   NEXT_STATUS,
-  DEFAULT_CONFIG,
 } from './models/order.model';
+import { OrdersService } from '../core/services/order.service';
 
 @Component({
   selector: 'app-root',
@@ -19,17 +19,30 @@ import {
 })
 export class App implements OnInit {
 
+  constructor(private ordersService: OrdersService) {}
+
   // ── Estado ──────────────────────────────────────────────────────
-  allOrders: Order[] = [];
-  activeTab: OrderStatus | 'all' = 'all';
+  allOrders = signal<Order[]>([]);
+  activeTab = signal<OrderStatus | 'all'>('all');
   editingOrder: Order | null = null;
   isModalOpen = false;
+  isLoading = false;
 
-  // Expõe os mapas pro template
   readonly STATUS_MAP = STATUS_MAP;
   readonly NEXT_STATUS = NEXT_STATUS;
 
-  // Form fields (two-way binding no template)
+  filteredOrders = computed(() => {
+    const tab = this.activeTab();
+    if (tab === 'all') return this.allOrders();
+    return this.allOrders().filter(o => o.status === tab);
+  });
+
+  stats = computed(() => ({
+    pending:    this.allOrders().filter(o => o.status === 'pending').length,
+    preparing:  this.allOrders().filter(o => o.status === 'preparing').length,
+    delivering: this.allOrders().filter(o => o.status === 'delivering').length,
+  }));
+
   form = {
     customer_name: '',
     address: '',
@@ -42,53 +55,30 @@ export class App implements OnInit {
 
   isSubmitting = false;
 
-  // ── Computed ─────────────────────────────────────────────────────
-  get filteredOrders(): Order[] {
-    if (this.activeTab === 'all') return this.allOrders;
-    return this.allOrders.filter(o => o.status === this.activeTab);
-  }
-
-  get stats() {
-    return {
-      pending:    this.allOrders.filter(o => o.status === 'pending').length,
-      preparing:  this.allOrders.filter(o => o.status === 'preparing').length,
-      delivering: this.allOrders.filter(o => o.status === 'delivering').length,
-    };
-  }
-
   // ── Lifecycle ────────────────────────────────────────────────────
   ngOnInit(): void {
-    // Inicializa lucide após a view estar pronta
+    this.loadOrders();
     setTimeout(() => (window as any).lucide?.createIcons(), 0);
+  }
 
-    // Inicializa o Data SDK, se disponível
-    const dataSdk = (window as any).dataSdk;
-    if (dataSdk) {
-      dataSdk.init({
-        onDataChanged: (data: Order[]) => {
-          this.allOrders = data.sort(
-            (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-          );
-          setTimeout(() => (window as any).lucide?.createIcons(), 0);
-        },
-      }).then((result: any) => {
-        if (!result?.isOk) this.showToast('Erro ao conectar com o banco de dados', 'error');
-      });
-    }
-
-    // Inicializa o Element SDK, se disponível
-    const elementSdk = (window as any).elementSdk;
-    if (elementSdk) {
-      elementSdk.init({
-        defaultConfig: DEFAULT_CONFIG,
-        onConfigChange: (config: typeof DEFAULT_CONFIG) => this.applyConfig(config),
-      });
+  // ── Carregar pedidos ──────────────────────────────────────────────
+  async loadOrders(): Promise<void> {
+    this.isLoading = true;
+    try {
+      const orders = await this.ordersService.list();
+      this.allOrders.set(orders);
+      setTimeout(() => (window as any).lucide?.createIcons(), 50);
+    } catch (e) {
+      console.error('erro no loadOrders:', e);
+      this.showToast('Erro ao carregar pedidos', 'error');
+    } finally {
+      this.isLoading = false;
     }
   }
 
   // ── Tabs ─────────────────────────────────────────────────────────
   setTab(tab: OrderStatus | 'all'): void {
-    this.activeTab = tab;
+    this.activeTab.set(tab);
   }
 
   // ── Modal ────────────────────────────────────────────────────────
@@ -120,56 +110,62 @@ export class App implements OnInit {
   // ── CRUD ─────────────────────────────────────────────────────────
   async saveOrder(): Promise<void> {
     this.isSubmitting = true;
-    const dataSdk = (window as any).dataSdk;
-
-    const payload = {
-      ...this.form,
-      phone:      this.form.phone,
-      created_at: this.editingOrder?.created_at ?? new Date().toISOString(),
-    };
-
-    let result: any;
-    if (this.editingOrder) {
-      result = await dataSdk?.update({ ...this.editingOrder, ...payload });
-    } else {
-      if (this.allOrders.length >= 999) {
-        this.showToast('Limite de 999 pedidos atingido!', 'error');
-        this.isSubmitting = false;
-        return;
+    try {
+      if (this.editingOrder) {
+        await this.ordersService.updateStatus(
+          this.editingOrder.__backendId!,
+          this.form.status
+        );
+      } else {
+        await this.ordersService.create({
+          customer:         { name: this.form.customer_name, phone: this.form.phone },
+          delivery_address: { street_name: this.form.address },
+          items:            [{ name: this.form.items, price: this.form.total, quantity: 1 }],
+          payments:         [],
+        });
       }
-      result = await dataSdk?.create(payload);
-    }
-
-    this.isSubmitting = false;
-
-    if (result?.isOk) {
       this.showToast(this.editingOrder ? 'Pedido atualizado!' : 'Pedido criado!');
       this.closeModal();
-    } else {
+      await this.loadOrders();
+    } catch {
       this.showToast('Erro ao salvar pedido', 'error');
+    } finally {
+      this.isSubmitting = false;
     }
   }
 
   confirmDelete(order: Order): void {
     this.showConfirm(`Excluir pedido de <strong>${order.customer_name}</strong>?`, async () => {
-      const result = await (window as any).dataSdk?.delete(order);
-      if (result?.isOk) this.showToast('Pedido excluído');
-      else this.showToast('Erro ao excluir', 'error');
+      try {
+        await this.ordersService.delete(order.__backendId!);
+        this.showToast('Pedido excluído');
+        await this.loadOrders();
+      } catch {
+        this.showToast('Erro ao excluir', 'error');
+      }
     });
   }
 
   async advanceStatus(order: Order): Promise<void> {
     const next = NEXT_STATUS[order.status];
     if (!next) return;
-    const result = await (window as any).dataSdk?.update({ ...order, status: next });
-    if (result?.isOk) this.showToast(`Status → ${STATUS_MAP[next].label}`);
-    else this.showToast('Erro ao atualizar status', 'error');
+    try {
+      await this.ordersService.updateStatus(order.__backendId!, next);
+      this.showToast(`Status → ${STATUS_MAP[next].label}`);
+      await this.loadOrders();
+    } catch {
+      this.showToast('Erro ao atualizar status', 'error');
+    }
   }
 
   // ── Helpers ──────────────────────────────────────────────────────
+  getNextStatus(order: Order): OrderStatus | null {
+    return NEXT_STATUS[order.status] ?? null;
+  }
+
   getOrderId(order: Order): string {
     const id = order.__backendId ?? '';
-    return 'PED-' + id.toString().padStart(3, '0');
+    return 'PED-' + id.toString().slice(-4).toUpperCase();
   }
 
   getTimeAgo(isoStr: string): string {
@@ -183,18 +179,13 @@ export class App implements OnInit {
     return `${Math.floor(hrs / 24)}d atrás`;
   }
 
-  // Parseia "1x Pizza R$45,00\n1x Refri R$12,00" em array de {name, price}
   parseItems(raw: string): { name: string; price: string }[] {
     if (!raw) return [];
     return raw.split('\n').filter(l => l.trim()).map(line => {
       const match = line.match(/^(.+?)\s+R?\$?\s*([\d.,]+)\s*$/);
-      if (match) return { name: match[1].trim(), price: match[2] };
+      if (match) return { name: match[1].trim(), price: 'R$ ' + match[2] };
       return { name: line.trim(), price: '' };
     });
-  }
-
-  getOrderNumber(order: Order, index: number): string {
-    return (order as any).order_number ?? `PED-${String(index + 1).padStart(3, '0')}`;
   }
 
   trackByOrder(_: number, order: Order): string {
@@ -202,12 +193,8 @@ export class App implements OnInit {
   }
 
   // ── Toast ─────────────────────────────────────────────────────────
-  private toastContainer(): HTMLElement {
-    return document.getElementById('toast-container')!;
-  }
-
   showToast(message: string, type: 'success' | 'error' = 'success'): void {
-    const c = this.toastContainer();
+    const c = document.getElementById('toast-container')!;
     const t = document.createElement('div');
     t.className = `toast toast--${type}`;
     t.textContent = message;
@@ -232,18 +219,10 @@ export class App implements OnInit {
           </div>
         </div>
       </div>`;
-    document.getElementById('confirm-no')!.onclick  = () => (c.innerHTML = '');
+    document.getElementById('confirm-no')!.onclick = () => (c.innerHTML = '');
     document.getElementById('confirm-overlay')!.onclick = (e) => {
       if (e.target === e.currentTarget) c.innerHTML = '';
     };
     document.getElementById('confirm-yes')!.onclick = () => { c.innerHTML = ''; onYes(); };
-  }
-
-  // ── Config SDK ────────────────────────────────────────────────────
-  private applyConfig(config: typeof DEFAULT_CONFIG): void {
-    const c = { ...DEFAULT_CONFIG, ...config };
-    document.body.style.backgroundColor = c.background_color;
-    document.body.style.color = c.text_color;
-    document.body.style.fontFamily = `${c.font_family}, 'DM Sans', sans-serif`;
   }
 }

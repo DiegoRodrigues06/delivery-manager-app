@@ -11,7 +11,7 @@
 npm-debug.log
 yarn-error.log
 
-# IDEs and editors
+# IDEs and editors s
 .idea/
 .project
 .classpath
@@ -43,3 +43,7 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+node_modules/
+dist/
+delivery-app/src/core/services/api.js

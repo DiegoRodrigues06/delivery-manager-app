@@ -16,15 +16,15 @@
       <div class="stats-bar">
         <span class="stats-bar__item">
           <span class="stats-bar__dot stats-bar__dot--pending"></span>
-          {{ stats.pending }} pendentes
+          {{ stats().pending }} pendentes
         </span>
         <span class="stats-bar__item">
           <span class="stats-bar__dot stats-bar__dot--preparing"></span>
-          {{ stats.preparing }} preparando
+          {{ stats().preparing }} preparando
         </span>
         <span class="stats-bar__item">
           <span class="stats-bar__dot stats-bar__dot--delivering"></span>
-          {{ stats.delivering }} em entrega
+          {{ stats().delivering }} em entrega
         </span>
         <span class="stats-bar__item stats-bar__item--link">
           <i data-lucide="bar-chart-2"></i>
@@ -37,11 +37,11 @@
   <!-- ── Toolbar: tabs + botão ───────────────────────────────── -->
   <div class="toolbar">
     <nav class="tabs">
-      <button class="tabs__btn" [class.tabs__btn--active]="activeTab === 'all'"        (click)="setTab('all')">Todos</button>
-      <button class="tabs__btn" [class.tabs__btn--active]="activeTab === 'pending'"    (click)="setTab('pending')">Pendente</button>
-      <button class="tabs__btn" [class.tabs__btn--active]="activeTab === 'preparing'"  (click)="setTab('preparing')">Preparando</button>
-      <button class="tabs__btn" [class.tabs__btn--active]="activeTab === 'delivering'" (click)="setTab('delivering')">Em Entrega</button>
-      <button class="tabs__btn" [class.tabs__btn--active]="activeTab === 'done'"       (click)="setTab('done')">Entregue</button>
+      <button class="tabs__btn" [class.tabs__btn--active]="activeTab() === 'all'"        (click)="setTab('all')">Todos</button>
+      <button class="tabs__btn" [class.tabs__btn--active]="activeTab() === 'pending'"    (click)="setTab('pending')">Pendente</button>
+      <button class="tabs__btn" [class.tabs__btn--active]="activeTab() === 'preparing'"  (click)="setTab('preparing')">Preparando</button>
+      <button class="tabs__btn" [class.tabs__btn--active]="activeTab() === 'delivering'" (click)="setTab('delivering')">Em Entrega</button>
+      <button class="tabs__btn" [class.tabs__btn--active]="activeTab() === 'done'"       (click)="setTab('done')">Entregue</button>
     </nav>
     <button class="btn btn--primary" (click)="openNewModal()">
       <i data-lucide="plus"></i>
@@ -52,15 +52,15 @@
   <!-- ── Lista de pedidos ─────────────────────────────────────── -->
   <main class="orders">
 
-    <div *ngIf="filteredOrders.length === 0" class="empty-state anim-fade">
+    <div *ngIf="filteredOrders().length === 0" class="empty-state anim-fade">
       <div class="empty-state__icon"><i data-lucide="package-open"></i></div>
       <h3 class="empty-state__title font-display">Nenhum pedido ainda</h3>
       <p class="empty-state__subtitle">Clique em "Novo Pedido" para começar</p>
     </div>
 
-    <div class="orders__grid" *ngIf="filteredOrders.length > 0">
+    <div class="orders__grid" *ngIf="filteredOrders().length > 0">
       <div
-        *ngFor="let order of filteredOrders; trackBy: trackByOrder; let i = index"
+        *ngFor="let order of filteredOrders(); trackBy: trackByOrder; let i = index"
         class="order-card anim-slide"
         [style.animation-delay]="i * 0.05 + 's'"
       >
@@ -113,7 +113,7 @@
             <button class="icon-btn icon-btn--delete" title="Excluir" (click)="confirmDelete(order)">
               <i data-lucide="trash-2"></i>
             </button>
-            <button *ngIf="NEXT_STATUS[order.status]" class="btn btn--advance" (click)="advanceStatus(order)">
+            <button *ngIf="getNextStatus(order)" class="btn btn--advance" (click)="advanceStatus(order)">
               Avançar <i data-lucide="chevron-right"></i>
             </button>
           </div>
