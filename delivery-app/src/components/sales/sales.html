@@ -1,0 +1,88 @@
+<div class="sales">
+
+  <!-- ── Header ──────────────────────────────────────────────────── -->
+  <header class="sales__header anim-fade">
+    <button class="sales__back" (click)="goBack()">
+      <i data-lucide="arrow-left"></i>
+    </button>
+    <h1 class="sales__title font-display">Vendas</h1>
+  </header>
+
+  <!-- ── Stat cards ───────────────────────────────────────────────── -->
+  <div class="stat-grid anim-slide">
+
+    <div class="stat-card">
+      <div class="stat-card__top">
+        <span class="stat-card__icon"><i data-lucide="package"></i></span>
+        <span class="stat-card__delta stat-card__delta--up">{{ metrics().salesDelta }}</span>
+      </div>
+      <p class="stat-card__value">{{ metrics().salesCount }}</p>
+      <p class="stat-card__label">Vendas Hoje</p>
+    </div>
+
+    <div class="stat-card" style="animation-delay:.07s">
+      <div class="stat-card__top">
+        <span class="stat-card__icon"><i data-lucide="dollar-sign"></i></span>
+        <span class="stat-card__delta stat-card__delta--up">{{ metrics().revDelta }}</span>
+      </div>
+      <p class="stat-card__value">R$ {{ formatCurrency(metrics().revenue) }}</p>
+      <p class="stat-card__label">Receita Hoje</p>
+    </div>
+
+    <div class="stat-card" style="animation-delay:.14s">
+      <div class="stat-card__top">
+        <span class="stat-card__icon"><i data-lucide="trending-up"></i></span>
+        <span class="stat-card__delta stat-card__delta--up">{{ metrics().ticketDelta }}</span>
+      </div>
+      <p class="stat-card__value">R$ {{ formatCurrency(metrics().avgTicket) }}</p>
+      <p class="stat-card__label">Ticket Médio</p>
+    </div>
+
+    <div class="stat-card" style="animation-delay:.21s">
+      <div class="stat-card__top">
+        <span class="stat-card__icon"><i data-lucide="clock"></i></span>
+        <span class="stat-card__delta stat-card__delta--down">{{ metrics().timeDelta }}</span>
+      </div>
+      <p class="stat-card__value">{{ metrics().avgTime }} min</p>
+      <p class="stat-card__label">Tempo Médio</p>
+    </div>
+
+  </div>
+
+  <!-- ── Charts row ────────────────────────────────────────────────── -->
+  <div class="charts-row">
+
+    <!-- Bar chart -->
+    <div class="chart-card chart-card--bar anim-slide" style="animation-delay:.1s">
+      <h2 class="chart-card__title">Vendas da Semana</h2>
+      <div class="chart-card__body">
+        <canvas #barCanvas></canvas>
+      </div>
+    </div>
+
+    <!-- Donut chart -->
+    <div class="chart-card chart-card--donut anim-slide" style="animation-delay:.18s">
+      <h2 class="chart-card__title">Por Categoria</h2>
+      <div class="chart-card__body">
+        <div class="donut-wrap">
+          <canvas #donutCanvas></canvas>
+        </div>
+        <ul class="legend">
+          <li
+            *ngFor="let label of categoryData().labels; let i = index"
+            class="legend__item"
+          >
+            <span
+              class="legend__dot"
+              [style.background]="categoryData().colors[i]"
+            ></span>
+            <span class="legend__name">{{ label }}</span>
+            <span class="legend__pct">{{ categoryData().data[i] }}%</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</div>

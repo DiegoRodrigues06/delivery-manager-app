@@ -1,0 +1,185 @@
+@use 'sass:color';
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.sales {
+  min-height: 100vh;
+  background: $background;
+  padding: 0 0 48px;
+}
+
+// ── Header ────────────────────────────────────────────────────────
+.sales__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 32px;
+  border-bottom: 1px solid $border;
+  background: $background;
+
+  @media (max-width: $bp-sm) { padding: 16px; }
+}
+
+.sales__back {
+  width: 36px;
+  height: 36px;
+  border-radius: $radius-md;
+  border: 1px solid $border;
+  background: transparent;
+  cursor: pointer;
+  @include flex-center;
+  transition: background 0.15s;
+  color: $foreground;
+
+  i { width: 18px; height: 18px; }
+  &:hover { background: $secondary; }
+}
+
+.sales__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: $foreground;
+  margin: 0;
+}
+
+// ── Stat cards ────────────────────────────────────────────────────
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  padding: 24px 32px 0;
+
+  @include sm  { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: $bp-sm) { padding: 16px 16px 0; }
+}
+
+.stat-card {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  padding: 18px 20px;
+  animation: slideUp 0.4s ease-out both;
+
+  &__top {
+    @include flex-between;
+    margin-bottom: 10px;
+  }
+
+  &__icon {
+    width: 32px;
+    height: 32px;
+    border-radius: $radius-sm;
+    background: $secondary;
+    @include flex-center;
+    color: $primary;
+    i { width: 16px; height: 16px; }
+  }
+
+  &__delta {
+    font-size: 0.78rem;
+    font-weight: 600;
+
+    &--up   { color: $success; }
+    &--down { color: $destructive; }
+  }
+
+  &__value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $foreground;
+    margin: 0 0 2px;
+    font-family: $font-display;
+  }
+
+  &__label {
+    font-size: 0.78rem;
+    color: $muted-foreground;
+    margin: 0;
+  }
+}
+
+// ── Charts row ────────────────────────────────────────────────────
+.charts-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  padding: 20px 32px 0;
+
+  @include lg { grid-template-columns: 1fr 360px; }
+  @media (max-width: $bp-sm) { padding: 16px 16px 0; }
+}
+
+// ── Chart card ────────────────────────────────────────────────────
+.chart-card {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  padding: 24px;
+  min-width: 0; // evita overflow no grid
+
+  &__title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: $foreground;
+    margin: 0 0 20px;
+  }
+
+  &__body {
+    position: relative;
+  }
+
+  &--bar &__body {
+    height: 260px;
+  }
+
+  &--donut &__body {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap; // quebra se não couber lado a lado
+  }
+}
+
+// ── Donut wrap ────────────────────────────────────────────────────
+.donut-wrap {
+  width: 160px;
+  height: 160px;
+  flex-shrink: 0;
+}
+
+// ── Legend ────────────────────────────────────────────────────────
+.legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-width: 120px;
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &__name {
+    font-size: 0.82rem;
+    color: $foreground;
+    flex: 1;
+  }
+
+  &__pct {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: $muted-foreground;
+  }
+}

@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewEncapsulation, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 import {
   Order,
   OrderStatus,
@@ -10,16 +11,19 @@ import {
 import { OrdersService } from '../core/services/order.service';
 
 @Component({
-  selector: 'app-root',
+  selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   encapsulation: ViewEncapsulation.None,
 })
 export class App implements OnInit {
 
-  constructor(private ordersService: OrdersService) {}
+  constructor(
+    private ordersService: OrdersService,
+    private router: Router,
+  ) {}
 
   // ── Estado ──────────────────────────────────────────────────────
   allOrders = signal<Order[]>([]);
@@ -77,6 +81,10 @@ export class App implements OnInit {
   }
 
   // ── Tabs ─────────────────────────────────────────────────────────
+  goToSales(): void {
+    this.router.navigate(['/vendas']);
+  }
+
   setTab(tab: OrderStatus | 'all'): void {
     this.activeTab.set(tab);
   }

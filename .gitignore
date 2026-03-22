@@ -47,3 +47,4 @@ Thumbs.db
 node_modules/
 dist/
 delivery-app/src/core/services/api.js
+delivery-app/.angular/cache/
